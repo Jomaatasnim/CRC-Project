@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>CRC Tool</title>
+
+<style>
+/* ===== BODY ===== */
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ===== CARD ===== */
+.container {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  width: 340px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  transition: 0.3s;
+}
+
+.container:hover {
+  transform: translateY(-5px);
+}
+
+/* TITLE */
+h1 {
+  color: #1e3a8a;
+  margin-bottom: 20px;
+}
+
+/* INPUTS */
+input {
+  width: 92%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  outline: none;
+}
+
+input:focus {
+  border-color: #1e3a8a;
+}
+
+/* BUTTONS */
+button {
+  width: 45%;
+  padding: 10px;
+  margin: 8px 2px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:first-of-type {
+  background: #1e3a8a;
+  color: white;
+}
+
+button:last-of-type {
+  background: #10b981;
+  color: white;
+}
+
+/* RESULT */
+#result {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f3f4f6;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>CRC TOOL</h1>
+
+  <input type="text" id="data" placeholder="Message binaire">
+  <input type="text" id="key" placeholder="Polynôme (ex: 10111)">
+
+  <button onclick="encode()">Encoder</button>
+  <button onclick="check()">Vérifier</button>
+
+  <div id="result"></div>
+</div>
+
+<script>
+/* ===== XOR ===== */
+function xor(a, b) {
+  let res = "";
+  for (let i = 1; i < b.length; i++) {
+    res += (a[i] === b[i]) ? "0" : "1";
+  }
+  return res;
+}
+
+/* ===== MOD 2 DIV ===== */
+function mod2div(dividend, divisor) {
+  let pick = divisor.length;
+  let tmp = dividend.substring(0, pick);
+
+  while (pick < dividend.length) {
+    if (tmp[0] === '1') {
+      tmp = xor(divisor, tmp) + dividend[pick];
+    } else {
+      tmp = xor("0".repeat(pick), tmp) + dividend[pick];
+    }
+    pick++;
+  }
+
+  if (tmp[0] === '1') {
+    tmp = xor(divisor, tmp);
+  } else {
+    tmp = xor("0".repeat(pick), tmp);
+  }
+
+  return tmp;
+}
+
+/* ===== ENCODE ===== */
+function encodeData(data, key) {
+  let appended = data + "0".repeat(key.length - 1);
+  let remainder = mod2div(appended, key);
+  return data + remainder;
+}
+
+/* ===== CHECK ===== */
+function checkData(data, key) {
+  let remainder = mod2div(data, key);
+  return remainder === "0".repeat(key.length - 1);
+}
+
+/* ===== UI ===== */
+function encode() {
+  let data = document.getElementById("data").value;
+  let key = document.getElementById("key").value;
+
+  let result = encodeData(data, key);
+
+  document.getElementById("result").innerHTML =
+    "Encoded message: " + result;
+}
+
+function check() {
+  let data = document.getElementById("data").value;
+  let key = document.getElementById("key").value;
+
+  let ok = checkData(data, key);
+
+  document.getElementById("result").innerHTML =
+    ok ? "✔ Message correct" : "❌ Erreur détectée";
+}
+</script>
+
+</body>
+  </html>
